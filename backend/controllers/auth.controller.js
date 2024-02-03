@@ -1,0 +1,102 @@
+import User from "../models/userModel.js";
+import bcryptjs from 'bcryptjs'
+import { errorHandler } from "../utils/errors.js";
+import jwt from "jsonwebtoken";
+
+export const signup = async (req, res, next) => {
+    //Get req.body from UI
+    console.log(req.body);
+    const {username, email, password} = req.body;
+    console.log("Here", username,email, password);
+    const hashedPassword = bcryptjs.hashSync(password, 10);
+    console.log(hashedPassword);
+    
+    // const newUser = new User({username, email, password:hashedPassword, crede})
+    const newUser = new User({username, email, password:hashedPassword})
+
+    try{
+        await newUser.save();
+        res.status(201).json("user created successfully");
+    }
+    catch(error){
+        // res.status(500).json(error.message);
+        next(error);
+    }
+}
+
+export const signIn = async(req, res, next) => {
+    const {email, password} = req.body;
+    try{
+        console.log("here", email, password)
+        //Check if the entered data exists, else return false to redirect to signUp page in UI
+        const doesEmailExists = await User.findOne({email:email});
+        if(!doesEmailExists) return next(errorHandler(404, 'User not found!'));
+
+        // const doesUsernameExists = await User.findOne({username: username});
+        // if(!doesUsernameExists) return next(errorHandler(404, 'User not found!')); 
+
+        const checkPassword = bcryptjs.compareSync(password, doesEmailExists.password);
+        if(!checkPassword) return next(errorHandler(401, 'Invalid Password!'));
+
+
+        //Create a token to store user creds in brower:
+        const token = jwt.sign({id: doesEmailExists._id}, process.env.JWT_SECRET);
+
+        //remove password from the user object returned by mongo before sending the response
+        const {password: pass, ...rest} = doesEmailExists._doc;
+
+        res.cookie('access_token', token, {httpOnly: true  }).status(200).json(rest);
+        //set({'Access-Control-Allow-Origin':'http://localhost:3000/'}).
+    }
+    catch(error){
+        next(error)
+    }
+}
+
+export const google = async(req,res, next)=> {
+    try{
+        //Chcek if this User exist in our DB
+        const user = await User.findOne({email: req.body.email})
+        // if user exists, authenticate, create a token and send cookie
+        if(user){
+            //Create a token to store user creds in brower:
+            const token = jwt.sign({id: user._id}, process.env.JWT_SECRET);
+           //remove password from the user object returned by mongo before sending the response
+            const {password: pass, ...rest} = user._doc;
+            res.cookie('access_token', token, {httpOnly: true  }).status(200).json(rest);
+        }
+        //else register the user in our DB
+        else{
+            const generatedPassword = Math.random().toString(36).slice(-8);
+            const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+
+            //Create new user to be saved in DB
+            //COnvert username in desired format with some random numbers at the end.
+            const newUser = new User({
+                username: req.body.name.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-4),
+                email: req.body.email, 
+                password:hashedPassword,
+                avatar: req.body.photo
+            })
+
+
+            try{
+                //Save new user in DB
+                await newUser.save();
+                const token = jwt.sign({id: newUser._id}, process.env.JWT_SECRET);
+
+                //Login directly as this is a google signUp, create token and send the cookie
+
+                const {password: pass, ...rest} = newUser._doc;
+                res.cookie('access_token', token, {httpOnly: true  }).status(200).json(rest);
+            }
+            catch(error){
+                // res.status(500).json(error.message);
+                next(error);
+            }
+        }
+    }
+    catch(error){
+        next(error)
+    }
+}
