@@ -35,7 +35,7 @@ export default function Header() {
             <img
               src={currentUser.avatar}
               alt="profile-pic"
-              className="rounder-full h-7 w-7 object-cover"
+              className="rounded-full h-7 w-7 object-cover"
             />
           ) : (
             <li className="hidden sm:inline px-2 text-slate-600 hover:text-red-500">
