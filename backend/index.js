@@ -3,24 +3,26 @@ import mongoose from "mongoose";
 import dotenv from 'dotenv';
 import cors from 'cors'
 import bodyParser from "body-parser";
- 
-import userRouter from './routes/user.route.js'
-import authRouter from './routes/auth.route.js'
+import cookieParser from "cookie-parser";
+
+import userRouter from "./routes/user.route.js";
+import authRouter from "./routes/auth.route.js";
 dotenv.config();
 
-mongoose.connect(process.env.MONGO_URI)
-.then(()=> console.log("connected to MongoDB database"))
-.catch((err)=> console.error(err));
-
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("connected to MongoDB database"))
+  .catch((err) => console.error(err));
 
 const app = express();
-app.use(cors({origin: 'http://localhost:3000', credentials: true})) //added after getting CORS error
+app.use(cors({ origin: "http://localhost:3000", credentials: true })); //added after getting CORS error
 // app.use(bodyParser.json()) //added after being not body showing undefined when passed from react application. Was workng with postman before this change
 // app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 //     extended: true
-//   })); 
+//   }));
 
 app.use(express.json());
+app.use(cookieParser()); //To accept cookies
 
 app.listen(3005, ()=>{
     console.log("Server is running on Port 3005s..")
