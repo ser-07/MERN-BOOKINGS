@@ -48,6 +48,18 @@ export const userSlice = createSlice({
     deleteUserFailure: (state, action) => {
       state.error = action.payload;
     },
+    //Signout is same as delete - Can combine the reducers. Keeping seperate to understand logic better
+    signOutUserStart: (state) => {
+      state.isLoading = true;
+    },
+    signOutUserSuccess: (state) => {
+      state.currentUser = null;
+      state.error = null;
+      state.isLoading = false;
+    },
+    signOuUserFailure: (state, action) => {
+      state.error = action.payload;
+    },
   },
 });
 
@@ -62,5 +74,8 @@ export const {
   deleteUserStart,
   deleteUserSuccess,
   deleteUserFailure,
+  signOutUserStart,
+  signOutUserSuccess,
+  signOutUserFailure,
 } = userSlice.actions;
 export default userSlice.reducer;

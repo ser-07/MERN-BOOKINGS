@@ -15,9 +15,10 @@ import {
   deleteUserStart,
   deleteUserSuccess,
   deleteUserFailure,
+  signOutUserStart,
+  signOutUserSuccess,
+  signOutUserFailure,
 } from "../redux/user/userSlice.js";
-
-import { UseDispatch } from "react-redux";
 
 export default function Profile() {
   const { currentUser, isLoading, error } = useSelector((state) => state.user);
@@ -33,7 +34,7 @@ export default function Profile() {
   // console.log(formData);
   // use useEffect hook to upload the file to firebase if file exists:
   useEffect(() => {
-    if (file) handleFileUpload(file);
+    if (file) {handleFileUpload(file)};
   }, [file]);
 
   const handleFileUpload = (file) => {
@@ -132,10 +133,40 @@ export default function Profile() {
       if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         setTimeout(() => dispatch(signInErrorTimeout()), 5000);
+        return;
       }
       dispatch(deleteUserSuccess(data));
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      dispatch(signOutUserStart());
+      const res = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}api/auth/signout`,
+        {
+          method: "GET",
+          mode: "cors",
+          cache: "no-cache",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          redirect: "follow",
+        }
+      );
+      const data = res.json();
+
+      if (data.success === false) {
+        dispatch(signOutUserFailure(data.message));
+        setTimeout(() => dispatch(signInErrorTimeout()), 5000);
+        return;
+      }
+      dispatch(signOutUserSuccess(data));
+    } catch (error) {
+      dispatch(signOutUserFailure(error.message));
     }
   };
 
@@ -163,7 +194,7 @@ export default function Profile() {
             </span>
           ) : fileUploadperc > 0 && fileUploadperc < 100 ? (
             <span className="text-slate-700">{`Uploading ${fileUploadperc}%`}</span>
-          ) : fileUploadperc == 100 ? (
+          ) : fileUploadperc === 100 ? (
             <span className="text-green-700">Upload successful</span>
           ) : (
             <span></span>
@@ -208,7 +239,10 @@ export default function Profile() {
         >
           Delete Account
         </span>
-        <span className="text-red-700 font-medium cursor-pointer">
+        <span
+          onClick={handleSignOut}
+          className="text-red-700 font-medium cursor-pointer"
+        >
           Sign Out
         </span>
       </div>

@@ -100,3 +100,13 @@ export const google = async(req,res, next)=> {
         next(error)
     }
 }
+
+export const signOut = async (req, res, next) => {
+  //For Signout we just need to clear the cookie from backend and remove the currentUser from redux state in frontend
+  try {
+    res.clearCookie("access_token");
+    res.status(200).json("User has been logged out!");
+  } catch (error) {
+    next(error);
+  }
+};
