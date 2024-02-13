@@ -5,6 +5,7 @@ import bcryptjs from "bcryptjs";
 export const test = (req, res) => res.send("Router workings");
 
 export const updateUser = async (req, res, next) => {
+  // console.log(req.user);
   if (req.user.id !== req.params.id)
     return next(errorHandler(401, "You can only update your own Account!"));
 
