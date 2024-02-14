@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
+import listingRouter from "./routes/listing.route.js";
+
 dotenv.config();
 
 mongoose
@@ -24,19 +26,18 @@ app.use(cors({ origin: "http://localhost:3000", credentials: true })); //added a
 app.use(express.json());
 app.use(cookieParser()); //To accept cookies
 
-app.listen(3005, ()=>{
-    console.log("Server is running on Port 3005s..")
+app.listen(3005, () => {
+  console.log("Server is running on Port 3005s..");
 });
-
 
 //Route for fetching user
 // app.get('/',(req, res)=>{
 //     res.send("Working...")
 // })
 
-app.use('/api/user',userRouter );
-app.use('/api/auth',authRouter );
-
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/listing", listingRouter);
 
 //Route for adding user
 
